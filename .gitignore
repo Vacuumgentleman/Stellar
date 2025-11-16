@@ -1,0 +1,62 @@
+# ========== Unity folders ==========
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+
+# Never upload the Asset Store tools
+Assets/AssetStoreTools*
+
+# ========== Auto-generated files ==========
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# ========== Crash and debug files ==========
+*.stackdump
+
+# ========== Unity cache & metadata ==========
+/ScriptAssemblies/
+/ShaderCache/
+sysinfo.txt
+
+# ========== Other generated folders ==========
+/[Bb]in/
+/[Oo]bj/
+/[Ll]ogs/
+
+# ========== Builds ==========
+*.apk
+*.aab
+*.unitypackage
+
+# ========== Jetbrains Rider ==========
+Assets/Plugins/Editor/JetBrains*
+
+# ========== Visual Studio ==========
+.vs/
+.vscode/
+.idea/
+
+# ========== Operating System files ==========
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
