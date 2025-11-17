@@ -8,63 +8,65 @@ using System.Threading.Tasks;
 
 public class TopScoresDisplay : MonoBehaviour
 {
-    [Header("UI para Top 3")]
-    public RawImage[] iconos;
-    public TMP_Text[] nombres;
-    public TMP_Text[] puntajes;
-    public Texture[] imagenesDisponibles;
+    [Header("UI - Top 3")]
+    [SerializeField] private RawImage[] iconSlots;
+    [SerializeField] private TMP_Text[] nameLabels;
+    [SerializeField] private TMP_Text[] scoreLabels;
+    [SerializeField] private Texture[] availableIcons;
 
-    // Conexion a MongoDB
-    private const string connectionString = "mongodb+srv://StellarAdmin:tdF671iP1QOrmcWC@stellar.kdo26l7.mongodb.net/?retryWrites=true&w=majority&appName=Stellar";
+    private const string ConnectionString =
+        "mongodb+srv://StellarAdmin:tdF671iP1QOrmcWC@stellar.kdo26l7.mongodb.net/?retryWrites=true&w=majority&appName=Stellar";
+
     private MongoClient client;
     private IMongoDatabase database;
     private IMongoCollection<BsonDocument> collection;
 
-    async void Start()
+    private async void Start()
     {
-        // Inicializar cliente y coleccion
-        client = new MongoClient(connectionString);
-        database = client.GetDatabase("StellarDataBase");
-        collection = database.GetCollection<BsonDocument>("Puntajes");
-
-        // Cargar los puntajes mas altos
-        await CargarTopPuntajes();
+        InitializeDatabase();
+        await LoadTopScores();
     }
 
-    async Task CargarTopPuntajes()
+    private void InitializeDatabase()
+    {
+        client = new MongoClient(ConnectionString);
+        database = client.GetDatabase("StellarDataBase");
+        collection = database.GetCollection<BsonDocument>("Puntajes");
+    }
+
+    private async Task LoadTopScores()
     {
         try
         {
-            // Obtener los 3 puntajes mas altos, ordenados de mayor a menor
-            var sort = Builders<BsonDocument>.Sort.Descending("puntaje");
-            var topDocs = await collection.Find(new BsonDocument()).Sort(sort).Limit(3).ToListAsync();
+            var sort = Builders<BsonDocument>.Sort.Descending("score");
+            var topDocs = await collection
+                .Find(new BsonDocument())
+                .Sort(sort)
+                .Limit(3)
+                .ToListAsync();
 
-            for (int i = 0; i < topDocs.Count && i < iconos.Length; i++)
+            for (int i = 0; i < topDocs.Count && i < iconSlots.Length; i++)
             {
                 var doc = topDocs[i];
-                string nombre = doc.GetValue("nombre", "SinNombre").AsString;
-                int puntaje = doc.GetValue("puntaje", 0).ToInt32();
 
-                // Obtener el valor del icono como texto y convertirlo a entero
-                string iconoStr = doc.GetValue("icono", "0").AsString;
-                int iconoIndex = 0;
-                int.TryParse(iconoStr, out iconoIndex);
+                string name = doc.GetValue("name", "Unknown").AsString;
+                int score = doc.GetValue("score", 0).ToInt32();
+                string iconStr = doc.GetValue("icon", "0").AsString;
 
-                // Mostrar los datos en la interfaz
-                nombres[i].text = nombre;
-                puntajes[i].text = $"{puntaje} pts";
+                int iconIndex = int.TryParse(iconStr, out int parsed) ? parsed : 0;
 
-                // Asignar la textura si el indice es valido
-                if (iconoIndex >= 0 && iconoIndex < imagenesDisponibles.Length)
-                    iconos[i].texture = imagenesDisponibles[iconoIndex];
+                nameLabels[i].text = name;
+                scoreLabels[i].text = $"{score} pts";
+
+                if (iconIndex >= 0 && iconIndex < availableIcons.Length)
+                    iconSlots[i].texture = availableIcons[iconIndex];
                 else
-                    iconos[i].texture = null;
+                    iconSlots[i].texture = null;
             }
         }
         catch (System.Exception ex)
         {
-            // Mostrar error en consola si falla la carga
-            Debug.LogError("Error al cargar puntajes: " + ex.Message);
+            Debug.LogError("Failed to load scores: " + ex.Message);
         }
     }
 }

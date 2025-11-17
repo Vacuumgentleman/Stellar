@@ -3,7 +3,6 @@ using UnityEngine.UI;
 using TMPro;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine.SceneManagement;
 using System.Collections;
@@ -17,30 +16,32 @@ public class ScoreManager : MonoBehaviour
     public static ScoreManager Instance { get; private set; }
 
     [Header("UI")]
-    public TMP_InputField nombreInput;
-    public TMP_Text puntajeTexto;
-    public Button confirmarButton;
+    [SerializeField] private TMP_InputField nameInput;
+    [SerializeField] private TMP_Text scoreText;
+    [SerializeField] private Button confirmButton;
 
-    [Header("Selector de Imagen")]
-    public RawImage rawImage;
-    public Texture[] images;
-    public Button leftButton;
-    public Button rightButton;
+    [Header("Icon Selector")]
+    [SerializeField] private RawImage iconDisplay;
+    [SerializeField] private Texture[] icons;
+    [SerializeField] private Button previousButton;
+    [SerializeField] private Button nextButton;
 
-    [Header("Escena de menu principal")]
+    [Header("Main Menu Scene")]
 #if UNITY_EDITOR
-    public SceneAsset menuSceneAsset;
+    [SerializeField] private SceneAsset menuSceneAsset;
 #endif
-    [HideInInspector] public string menuSceneName;
+    [SerializeField, HideInInspector] private string menuSceneName;
 
-    [Header("Puntaje")]
+    [Header("Score Settings")]
     [SerializeField] private int totalScore = 0;
-    [SerializeField] private int pointsPerEnemy = 150;
+    [SerializeField] private int scorePerEnemy = 150;
 
-    private int currentIndex = 0;
+    private int currentIconIndex = 0;
 
-    // Conexion a MongoDB
-    private const string connectionString = "mongodb+srv://StellarAdmin:tdF671iP1QOrmcWC@stellar.kdo26l7.mongodb.net/?retryWrites=true&w=majority&appName=Stellar";
+    // MongoDB Settings
+    private const string ConnectionString = 
+        "mongodb+srv://StellarAdmin:tdF671iP1QOrmcWC@stellar.kdo26l7.mongodb.net/?retryWrites=true&w=majority&appName=Stellar";
+
     private MongoClient client;
     private IMongoDatabase database;
     private IMongoCollection<BsonDocument> collection;
@@ -53,134 +54,137 @@ public class ScoreManager : MonoBehaviour
 #endif
     }
 
-    void Awake()
+    private void Awake()
     {
-        // Implementacion de singleton global
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
     }
 
-    void Start()
+    private void Start()
     {
-        // Inicializar conexion a MongoDB
-        client = new MongoClient(connectionString);
+        InitializeDatabase();
+        AssignButtonEvents();
+        RefreshIcon();
+        UpdateScoreText();
+    }
+
+    private void InitializeDatabase()
+    {
+        client = new MongoClient(ConnectionString);
         database = client.GetDatabase("StellarDataBase");
         collection = database.GetCollection<BsonDocument>("Puntajes");
-
-        // Asignar funciones a botones
-        leftButton.onClick.AddListener(PreviousImage);
-        rightButton.onClick.AddListener(NextImage);
-        confirmarButton.onClick.AddListener(() => StartCoroutine(ConfirmarYVolver()));
-
-        // Cargar imagen inicial y texto de puntaje
-        UpdateImage();
-        ActualizarTextoPuntaje();
     }
 
-    // Incrementar puntaje por enemigo eliminado
+    private void AssignButtonEvents()
+    {
+        previousButton.onClick.AddListener(ShowPreviousIcon);
+        nextButton.onClick.AddListener(ShowNextIcon);
+        confirmButton.onClick.AddListener(() => StartCoroutine(SaveAndReturnToMenu()));
+    }
+
+    // -------------------------
+    // Score Management
+    // -------------------------
+
     public void AddEnemyKillScore()
     {
-        totalScore += pointsPerEnemy;
-        ActualizarTextoPuntaje();
-        Debug.Log($"[ScoreManager] +{pointsPerEnemy} puntos. Total: {totalScore}");
+        totalScore += scorePerEnemy;
+        UpdateScoreText();
+        Debug.Log($"[ScoreManager] Added {scorePerEnemy} points. Total = {totalScore}");
     }
 
-    // Actualizar el texto que muestra el puntaje actual
-    private void ActualizarTextoPuntaje()
+    private void UpdateScoreText()
     {
-        if (puntajeTexto != null)
-            puntajeTexto.text = $"Puntaje: {totalScore:00000}";
+        if (scoreText != null)
+            scoreText.text = $"Score: {totalScore:00000}";
     }
 
-    // Obtener el puntaje total actual
     public int GetTotalScore() => totalScore;
 
-    // Reiniciar puntaje
     public void ResetScore()
     {
         totalScore = 0;
-        ActualizarTextoPuntaje();
+        UpdateScoreText();
     }
 
-    // Cambiar a la imagen anterior
-    void PreviousImage()
+    // -------------------------
+    // Icon Selector
+    // -------------------------
+
+    private void ShowPreviousIcon()
     {
-        currentIndex = (currentIndex - 1 + images.Length) % images.Length;
-        UpdateImage();
+        currentIconIndex = (currentIconIndex - 1 + icons.Length) % icons.Length;
+        RefreshIcon();
     }
 
-    // Cambiar a la siguiente imagen
-    void NextImage()
+    private void ShowNextIcon()
     {
-        currentIndex = (currentIndex + 1) % images.Length;
-        UpdateImage();
+        currentIconIndex = (currentIconIndex + 1) % icons.Length;
+        RefreshIcon();
     }
 
-    // Actualizar la textura mostrada
-    void UpdateImage()
+    private void RefreshIcon()
     {
-        if (images.Length > 0)
-            rawImage.texture = images[currentIndex];
+        if (icons.Length > 0)
+            iconDisplay.texture = icons[currentIconIndex];
     }
 
-    // Confirmar datos y volver al menu principal
-    private IEnumerator ConfirmarYVolver()
-    {
-        string nombre = nombreInput.text.Trim();
-        string icono = currentIndex.ToString();
+    // -------------------------
+    // Save and Return
+    // -------------------------
 
-        if (string.IsNullOrWhiteSpace(nombre))
+    private IEnumerator SaveAndReturnToMenu()
+    {
+        string playerName = nameInput.text.Trim();
+        string icon = currentIconIndex.ToString();
+
+        if (string.IsNullOrWhiteSpace(playerName))
         {
-            Debug.LogWarning("El nombre es obligatorio.");
+            Debug.LogWarning("Name field is required.");
             yield break;
         }
 
-        // Iniciar tarea para guardar datos en MongoDB
-        Task<bool> guardarTask = GuardarEnMongoDB(nombre, icono, totalScore);
-        yield return new WaitUntil(() => guardarTask.IsCompleted);
+        Task<bool> saveTask = SaveToMongoDB(playerName, icon, totalScore);
+        yield return new WaitUntil(() => saveTask.IsCompleted);
 
-        // Si fue exitoso, volver al menu
-        if (guardarTask.Result)
+        if (saveTask.Result)
         {
             yield return new WaitForSecondsRealtime(1f);
             Time.timeScale = 1f;
+
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
 
             if (!string.IsNullOrEmpty(menuSceneName))
-            {
                 SceneManager.LoadScene(menuSceneName);
-            }
             else
-            {
-                Debug.LogWarning("No se ha asignado una escena de menu.");
-            }
+                Debug.LogWarning("ScoreManager: No main menu scene assigned.");
         }
     }
 
-    // Guardar los datos en MongoDB de forma asincronica
-    private async Task<bool> GuardarEnMongoDB(string nombre, string icono, int puntaje)
+    private async Task<bool> SaveToMongoDB(string name, string icon, int score)
     {
         var document = new BsonDocument
         {
-            { "nombre", nombre },
-            { "icono", icono },
-            { "puntaje", puntaje }
+            { "name", name },
+            { "icon", icon },
+            { "score", score }
         };
 
         try
         {
             await collection.InsertOneAsync(document);
-            Debug.Log("Datos guardados en MongoDB Atlas.");
+            Debug.Log("Score saved to MongoDB Atlas.");
             return true;
         }
         catch (System.Exception ex)
         {
-            Debug.LogError("Error al guardar en MongoDB: " + ex.Message);
+            Debug.LogError("MongoDB save error: " + ex.Message);
             return false;
         }
     }
