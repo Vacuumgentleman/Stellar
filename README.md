@@ -2,7 +2,26 @@
 **Stellar** is a 3D arcade-style space shooter where players pilot highly maneuverable spacecraft through waves of increasingly difficult enemies.  
 Fast-paced combat, responsive controls, and a clean sci-fi aesthetic define the experience.
 
+
+  ## Play on Itch.io
+
+  <div align="center">
+
+  **Play Stellar on Itch.io:**  
+  https://thevacuumgentleman.itch.io/stellar
+
+  <br>
+
+  <img
+    width="300"
+    alt="Stellar Logo"
+    src="https://github.com/user-attachments/assets/57e64e70-c3c8-414e-9bf2-8748d3d975e6"
+  />
+
+  </div>
+
 ---
+
 
 ## Gameplay
 
@@ -80,6 +99,9 @@ videos: |
   ## Gameplay Video
   [![Gameplay](https://img.youtube.com/vi/example-thumbnail/0.jpg)](https://github.com/user-attachments/assets/example-video)
 
+---
+## Author: Sebastian Gravini
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/02706a3a-7b6b-44f8-817b-1f02ee2b3f1d" />
 
-author: "Sebastian Gravini"
+---
 repository: "https://github.com/Vacuumgentleman/Stellar"
