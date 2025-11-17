@@ -8,9 +8,9 @@ using UnityEditor;
 
 public class SceneLoaderButton : MonoBehaviour
 {
-    [Header("Asigna la escena desde el editor")]
+    [Header("Scene to Load (Editor Only)")]
 #if UNITY_EDITOR
-    public SceneAsset sceneToLoad;  // Esto solo existe en el editor
+    public SceneAsset sceneAsset;
 #endif
 
     [SerializeField, HideInInspector]
@@ -18,11 +18,10 @@ public class SceneLoaderButton : MonoBehaviour
 
     private void OnValidate()
     {
-        // Esto se ejecuta solo en el editor, para obtener el nombre de la escena
 #if UNITY_EDITOR
-        if (sceneToLoad != null)
+        if (sceneAsset != null)
         {
-            string path = AssetDatabase.GetAssetPath(sceneToLoad);
+            string path = AssetDatabase.GetAssetPath(sceneAsset);
             sceneName = System.IO.Path.GetFileNameWithoutExtension(path);
         }
 #endif
@@ -30,12 +29,10 @@ public class SceneLoaderButton : MonoBehaviour
 
     private void Awake()
     {
-        // Asegura que el botón tenga el evento asignado
-        Button btn = GetComponent<Button>();
-        if (btn != null)
-        {
-            btn.onClick.AddListener(LoadScene);
-        }
+        Button button = GetComponent<Button>();
+
+        if (button != null)
+            button.onClick.AddListener(LoadScene);
     }
 
     public void LoadScene()
@@ -46,7 +43,7 @@ public class SceneLoaderButton : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("No se ha asignado ninguna escena para cargar.");
+            Debug.LogWarning("SceneLoaderButton: No scene assigned.");
         }
     }
 }

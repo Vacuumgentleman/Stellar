@@ -7,20 +7,21 @@ using UnityEditor;
 
 public class PauseManager : MonoBehaviour
 {
-    [Header("Teclas de control")]
+    [Header("Input Keys")]
     [SerializeField] private KeyCode pauseKey = KeyCode.Escape;
     [SerializeField] private KeyCode confirmKey = KeyCode.Return;
 
-    [Header("UI de pausa")]
+    [Header("Pause UI")]
     [SerializeField] private GameObject pauseMenuUI;
 
-    [Header("Escena de menú principal")]
+    [Header("Main Menu Scene")]
 #if UNITY_EDITOR
-    [SerializeField] private SceneAsset menuSceneAsset; // <-- Puedes arrastrar la escena aquí
+    [SerializeField] private SceneAsset menuSceneAsset;
 #endif
-    [SerializeField, HideInInspector] private string menuSceneName;
+    [SerializeField, HideInInspector] 
+    private string menuSceneName;
 
-    private bool isPaused = false;
+    private bool isPaused;
 
     private void OnValidate()
     {
@@ -72,31 +73,26 @@ public class PauseManager : MonoBehaviour
 
     public void ReturnToMenu()
     {
-        // Restaurar el tiempo por si acaso
+        // Reset time and state
         Time.timeScale = 1f;
         isPaused = false;
 
-        // Ocultar la UI de pausa antes de cambiar de escena
+        // Hide pause UI
         if (pauseMenuUI != null)
             pauseMenuUI.SetActive(false);
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // Cargar la escena
         if (!string.IsNullOrEmpty(menuSceneName))
         {
             SceneManager.LoadScene(menuSceneName);
         }
         else
         {
-            Debug.LogWarning("No se ha asignado una escena de menú en PauseManager.");
+            Debug.LogWarning("PauseManager: No menu scene assigned.");
         }
     }
 
-
-    public bool IsPaused()
-    {
-        return isPaused;
-    }
+    public bool IsPaused() => isPaused;
 }
