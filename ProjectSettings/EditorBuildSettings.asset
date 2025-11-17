@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Stellar/Scenes/Menu.unity
     guid: 8cded15fbd178204587aa1348b9c552d
   - enabled: 1
-    path: Assets/Stellar/Scenes/Juego Low.unity
+    path: Assets/Stellar/Scenes/Game Low.unity
     guid: b2df4047a2d89d94ab3d819169909f94
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
