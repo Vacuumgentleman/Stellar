@@ -3,83 +3,79 @@ using UnityEngine;
 namespace WrightAngle.Waypoint
 {
     /// <summary>
-    /// Configure your waypoint system's appearance and behavior globally.
-    /// Create instances via 'Assets -> Create -> WrightAngle -> Waypoint Settings'.
-    /// This asset allows easy tweaking of performance, visuals, and core mechanics.
+    /// ScriptableObject that stores global configuration for the waypoint system.
+    /// Create via: Assets -> Create -> WrightAngle -> Waypoint Settings
     /// </summary>
     [CreateAssetMenu(fileName = "WaypointSettings", menuName = "WrightAngle/Waypoint Settings", order = 1)]
     public class WaypointSettings : ScriptableObject
     {
-        /// <summary> Specifies the camera projection type used in your scene. </summary>
         public enum ProjectionMode { Mode3D, Mode2D }
-
-        /// <summary> Defines the unit system for distance display. </summary>
         public enum DistanceUnitSystem { Metric, Imperial }
 
         [Header("Core Functionality")]
-        [Tooltip("How often (in seconds) the waypoint system updates. Lower values increase responsiveness but may impact performance.")]
+        [Tooltip("Update frequency (seconds) for the waypoint manager.")]
         [Range(0.01f, 1.0f)]
         public float UpdateFrequency = 0.1f;
 
-        [Tooltip("Select Mode3D for perspective cameras or Mode2D for orthographic cameras to ensure correct calculations.")]
+        [Tooltip("Choose Mode3D for perspective cameras, Mode2D for orthographic.")]
         public ProjectionMode GameMode = ProjectionMode.Mode3D;
 
-        [Tooltip("Assign your custom waypoint marker prefab here. This UI element will represent your waypoints visually.")]
+        [Tooltip("Prefab used as the marker UI element.")]
         public GameObject MarkerPrefab;
 
-        [Tooltip("The maximum distance (in world units) from the camera at which a waypoint marker remains visible.")]
+        [Tooltip("Maximum world distance at which a marker is visible.")]
         public float MaxVisibleDistance = 1000f;
 
-        [Tooltip("When using Mode2D, enable this to calculate the MaxVisibleDistance check using only X and Y axes, ignoring Z.")]
+        [Tooltip("When in Mode2D, ignore Z axis for distance checks.")]
         public bool IgnoreZAxisForDistance2D = true;
 
         [Header("Off-Screen Indicator")]
-        [Tooltip("Enable this to show markers clamped to the screen edges when their target is outside the camera view.")]
+        [Tooltip("Show clamped markers at screen edges when targets are outside view.")]
         public bool UseOffScreenIndicators = true;
 
-        [Tooltip("Define the distance (in pixels) from the screen edges where off-screen indicators will be positioned.")]
+        [Tooltip("Pixels margin from screen edges for off-screen indicators.")]
         [Range(0f, 100f)]
         public float ScreenEdgeMargin = 50f;
 
-        [Tooltip("Enable this to flip the off-screen marker's vertical orientation. Useful if your marker icon naturally points downwards.")]
+        [Tooltip("Flip the off-screen marker vertically (useful if icon points down).")]
         public bool FlipOffScreenMarkerY = false;
 
         [Header("Distance Scaling")]
-        [Tooltip("Enable this to make waypoint markers scale based on their distance from the camera.")]
+        [Tooltip("Enable marker scaling by distance.")]
         public bool EnableDistanceScaling = false;
 
-        [Tooltip("The distance (in world units) at which the marker will be at its Default Scale. Markers further than this will scale down towards Min Scale Factor.")]
+        [Tooltip("Distance where marker uses DefaultScaleFactor.")]
         public float DistanceForDefaultScale = 50f;
 
-        [Tooltip("The distance (in world units) beyond which the marker will be at its Min Scale Factor. Scaling occurs between Distance For Default Scale and this value.")]
+        [Tooltip("Distance beyond which marker reaches MinScaleFactor.")]
         public float MaxScalingDistance = 200f;
 
-        [Tooltip("The minimum scale factor for the marker when it is at or beyond Max Scaling Distance. 0 will make it invisible.")]
+        [Tooltip("Minimum scale factor (0 = invisible).")]
         [Range(0f, 1f)]
         public float MinScaleFactor = 0.5f;
 
-        [Tooltip("The default scale factor for the marker when it is at or closer than Distance For Default Scale.")]
+        [Tooltip("Default scale factor when near.")]
         [Range(0.1f, 5f)]
         public float DefaultScaleFactor = 1.0f;
 
         [Header("Distance Text (TMPro)")]
-        [Tooltip("Enable this to display the distance to the waypoint as text.")]
+        [Tooltip("Show numeric distance using TextMeshPro.")]
         public bool DisplayDistanceText = false;
 
-        [Tooltip("Choose the unit system for displaying distances (Metric: m/km, Imperial: ft/mi).")]
+        [Tooltip("Unit system for distance display.")]
         public DistanceUnitSystem UnitSystem = DistanceUnitSystem.Metric;
 
-        [Tooltip("Number of decimal places for distance values (e.g., 1 for 123.4m).")]
+        [Tooltip("Decimal places for distance formatting.")]
         [Range(0, 3)]
         public int DistanceDecimalPlaces = 0;
 
-        [Tooltip("Suffix for distances displayed in meters.")]
+        [Tooltip("Suffix for meters.")]
         public string SuffixMeters = "m";
-        [Tooltip("Suffix for distances displayed in kilometers.")]
+        [Tooltip("Suffix for kilometers.")]
         public string SuffixKilometers = "km";
-        [Tooltip("Suffix for distances displayed in feet.")]
+        [Tooltip("Suffix for feet.")]
         public string SuffixFeet = "ft";
-        [Tooltip("Suffix for distances displayed in miles.")]
+        [Tooltip("Suffix for miles.")]
         public string SuffixMiles = "mi";
 
         // Conversion constants
@@ -87,21 +83,16 @@ namespace WrightAngle.Waypoint
         public const float FEET_PER_METER = 3.28084f;
         public const float FEET_PER_MILE = 5280f;
 
-
-        // --- Helper Methods ---
-
         /// <summary>
-        /// Retrieves the assigned marker prefab GameObject.
-        /// Ensures a prefab is assigned before use.
+        /// Return assigned marker prefab and warn if missing.
         /// </summary>
-        /// <returns>The assigned marker prefab, or null if none is set.</returns>
         public GameObject GetMarkerPrefab()
         {
             if (MarkerPrefab == null)
             {
-                Debug.LogError("WaypointSettings: Marker Prefab is not assigned! Please assign a prefab in the Waypoint Settings asset.", this);
+                Debug.LogError("WaypointSettings: MarkerPrefab is not assigned. Please assign one in the Waypoint Settings asset.", this);
             }
             return MarkerPrefab;
         }
-    } // End Class
-} // End Namespace
+    }
+}
