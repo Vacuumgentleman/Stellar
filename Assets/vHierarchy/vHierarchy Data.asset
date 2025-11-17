@@ -22,10 +22,28 @@ MonoBehaviour:
         - globalObjectIdString: GlobalObjectId_V1-2-b2df4047a2d89d94ab3d819169909f94-1833485526-0
         - globalObjectIdString: GlobalObjectId_V1-2-b2df4047a2d89d94ab3d819169909f94-804342031-0
         - globalObjectIdString: GlobalObjectId_V1-2-b2df4047a2d89d94ab3d819169909f94-80727092-0
+        - globalObjectIdString: GlobalObjectId_V1-2-b2df4047a2d89d94ab3d819169909f94-484001437-0
+        - globalObjectIdString: GlobalObjectId_V1-2-b2df4047a2d89d94ab3d819169909f94-1517072159-0
+        - globalObjectIdString: GlobalObjectId_V1-2-b2df4047a2d89d94ab3d819169909f94-1838687800-0
+        - globalObjectIdString: GlobalObjectId_V1-2-b2df4047a2d89d94ab3d819169909f94-318720477-0
+        - globalObjectIdString: GlobalObjectId_V1-2-b2df4047a2d89d94ab3d819169909f94-503790502-0
+        - globalObjectIdString: GlobalObjectId_V1-2-b2df4047a2d89d94ab3d819169909f94-1951431237-0
         values:
         - colorIndex: 3
           iconNameOrGuid: 
         - colorIndex: 6
+          iconNameOrGuid: 
+        - colorIndex: 4
+          iconNameOrGuid: 
+        - colorIndex: 2
+          iconNameOrGuid: 
+        - colorIndex: 9
+          iconNameOrGuid: 
+        - colorIndex: 2
+          iconNameOrGuid: 
+        - colorIndex: 7
+          iconNameOrGuid: 
+        - colorIndex: 8
           iconNameOrGuid: 
         - colorIndex: 4
           iconNameOrGuid: 

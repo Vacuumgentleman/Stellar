@@ -2,28 +2,35 @@ using UnityEngine;
 
 public class ThrusterParticles : MonoBehaviour
 {
-    [Header("Propulsores - frontales")]
-    public ParticleSystem frontalIzqMotor;
-    public ParticleSystem frontalRightMotor;
+    [Header("Front Thrusters")]
+    [SerializeField] private ParticleSystem frontLeft;
+    [SerializeField] private ParticleSystem frontRight;
 
-    [Header("Propulsores - traseros")]
-    public ParticleSystem traseroIzqMotor;
-    public ParticleSystem traseroRightMotor;
+    [Header("Rear Thrusters")]
+    [SerializeField] private ParticleSystem rearLeft;
+    [SerializeField] private ParticleSystem rearRight;
 
-    [Header("Propulsores - superiores")]
-    public ParticleSystem superiorIzqMotor;
-    public ParticleSystem superiorRightMotor;
+    [Header("Top Thrusters")]
+    [SerializeField] private ParticleSystem topLeft;
+    [SerializeField] private ParticleSystem topRight;
 
-    [Header("Propulsores - inferiores")]
-    public ParticleSystem inferioresIzqMotor;
-    public ParticleSystem inferioresRightMotor;
+    [Header("Bottom Thrusters")]
+    [SerializeField] private ParticleSystem bottomLeft;
+    [SerializeField] private ParticleSystem bottomRight;
 
-    [Header("Controlador de la nave")]
-    public PlayerController playerController;
+    [Header("Player Controller")]
+    [SerializeField] private PlayerController controller;
 
-    void Update()
+    private void Update()
     {
-        // Entradas directas del teclado
+        HandleInputThrusters();
+        HandleStabilizationThrusters();
+    }
+
+    // ---------------- INPUT ----------------
+
+    private void HandleInputThrusters()
+    {
         bool forward = Input.GetKey(KeyCode.W);
         bool backward = Input.GetKey(KeyCode.S);
         bool up = Input.GetKey(KeyCode.Space);
@@ -31,120 +38,117 @@ public class ThrusterParticles : MonoBehaviour
         bool rollLeft = Input.GetKey(KeyCode.A);
         bool rollRight = Input.GetKey(KeyCode.D);
 
-        // Propulsion hacia adelante
-        ToggleMotor(forward, traseroIzqMotor);
-        ToggleMotor(forward, traseroRightMotor);
+        Toggle(rearLeft, forward);
+        Toggle(rearRight, forward);
 
-        // Propulsion hacia atras
-        ToggleMotor(backward, frontalIzqMotor);
-        ToggleMotor(backward, frontalRightMotor);
+        Toggle(frontLeft, backward);
+        Toggle(frontRight, backward);
 
-        // Propulsion hacia arriba
-        ToggleMotor(up, inferioresIzqMotor);
-        ToggleMotor(up, inferioresRightMotor);
+        Toggle(bottomLeft, up);
+        Toggle(bottomRight, up);
 
-        // Propulsion hacia abajo
-        ToggleMotor(down, superiorIzqMotor);
-        ToggleMotor(down, superiorRightMotor);
+        Toggle(topLeft, down);
+        Toggle(topRight, down);
 
-        // Giro hacia la izquierda: activar propulsores adecuados
         if (rollLeft)
         {
-            ToggleMotor(true, superiorIzqMotor);
-            ToggleMotor(true, inferioresRightMotor);
+            Toggle(topLeft, true);
+            Toggle(bottomRight, true);
 
-            if (playerController != null && playerController.isStabilizing)
+            if (controller && controller.HasRotationInput() == false)
             {
-                ToggleMotor(false, superiorRightMotor);
-                ToggleMotor(false, inferioresIzqMotor);
+                Toggle(topRight, false);
+                Toggle(bottomLeft, false);
             }
         }
 
-        // Giro hacia la derecha: activar propulsores adecuados
         if (rollRight)
         {
-            ToggleMotor(true, superiorRightMotor);
-            ToggleMotor(true, inferioresIzqMotor);
+            Toggle(topRight, true);
+            Toggle(bottomLeft, true);
 
-            if (playerController != null && playerController.isStabilizing)
+            if (controller && controller.HasRotationInput() == false)
             {
-                ToggleMotor(false, superiorIzqMotor);
-                ToggleMotor(false, inferioresRightMotor);
-            }
-        }
-
-        // Estabilizacion automatica si esta activa
-        if (playerController != null && playerController.isStabilizing)
-        {
-            Vector3 velocity = playerController.GetCurrentVelocity();
-            Vector3 angularVelocity = playerController.GetAngularVelocity();
-            bool inputRotando = playerController.IsRotatingInput();
-            bool rotandoPorInercia = Mathf.Abs(angularVelocity.z) > 0.1f;
-
-            // Estabilizacion en el eje Z (adelante/atras)
-            bool estabilizarZ = !forward && !backward && Mathf.Abs(velocity.z) > 0.1f;
-            ToggleMotor(estabilizarZ, traseroIzqMotor);
-            ToggleMotor(estabilizarZ, traseroRightMotor);
-            ToggleMotor(estabilizarZ, frontalIzqMotor);
-            ToggleMotor(estabilizarZ, frontalRightMotor);
-
-            // Estabilizacion en el eje Y (arriba/abajo)
-            bool estabilizarY = !up && !down && Mathf.Abs(velocity.y) > 0.1f;
-            ToggleMotor(estabilizarY, inferioresIzqMotor);
-            ToggleMotor(estabilizarY, inferioresRightMotor);
-            ToggleMotor(estabilizarY, superiorIzqMotor);
-            ToggleMotor(estabilizarY, superiorRightMotor);
-
-            // Estabilizacion de rotacion por inercia
-            if (!inputRotando && rotandoPorInercia)
-            {
-                if (angularVelocity.z > 0f)
-                {
-                    ToggleMotor(true, inferioresIzqMotor);
-                    ToggleMotor(true, superiorRightMotor);
-
-                    ToggleMotor(false, inferioresRightMotor);
-                    ToggleMotor(false, superiorIzqMotor);
-                }
-                else
-                {
-                    ToggleMotor(true, inferioresRightMotor);
-                    ToggleMotor(true, superiorIzqMotor);
-
-                    ToggleMotor(false, inferioresIzqMotor);
-                    ToggleMotor(false, superiorRightMotor);
-                }
-            }
-            else if (!inputRotando && !rotandoPorInercia)
-            {
-                // Si ya esta estabilizado, apagar los motores de rotacion
-                ToggleMotor(false, superiores: true);
-                ToggleMotor(false, superiores: false);
+                Toggle(topLeft, false);
+                Toggle(bottomRight, false);
             }
         }
     }
 
-    // Metodo para encender o apagar un motor individual
-    void ToggleMotor(bool active, ParticleSystem motor)
-    {
-        if (motor == null) return;
+    // ---------------- STABILIZATION ----------------
 
-        if (active && !motor.isPlaying) motor.Play();
-        else if (!active && motor.isPlaying) motor.Stop();
+    private void HandleStabilizationThrusters()
+    {
+        if (!controller || !controller) return;
+        if (!controller) return;
+
+        if (!controller) return;
+
+        if (!controller.GetAngularVelocity().Equals(Vector3.zero))
+        { }
+
+        if (!controller) return;
+
+        if (!controller) return;
+
+        if (!controller) return;
+
+        Vector3 velocity = controller.GetVelocity();
+        Vector3 angularVelocity = controller.GetAngularVelocity();
+
+        bool rotating = controller.HasRotationInput();
+        bool inertiaRotation = Mathf.Abs(angularVelocity.z) > 0.1f;
+
+        // Forward/back stabilization
+        bool stabilizeZ = Mathf.Abs(velocity.z) > 0.1f && !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.S);
+        Toggle(rearLeft, stabilizeZ);
+        Toggle(rearRight, stabilizeZ);
+        Toggle(frontLeft, stabilizeZ);
+        Toggle(frontRight, stabilizeZ);
+
+        // Up/down stabilization
+        bool stabilizeY = Mathf.Abs(velocity.y) > 0.1f && !Input.GetKey(KeyCode.Space) && !Input.GetKey(KeyCode.LeftShift);
+        Toggle(bottomLeft, stabilizeY);
+        Toggle(bottomRight, stabilizeY);
+        Toggle(topLeft, stabilizeY);
+        Toggle(topRight, stabilizeY);
+
+        // Rotational stabilization
+        if (!rotating && inertiaRotation)
+        {
+            if (angularVelocity.z > 0)
+            {
+                Toggle(bottomLeft, true);
+                Toggle(topRight, true);
+
+                Toggle(bottomRight, false);
+                Toggle(topLeft, false);
+            }
+            else
+            {
+                Toggle(bottomRight, true);
+                Toggle(topLeft, true);
+
+                Toggle(bottomLeft, false);
+                Toggle(topRight, false);
+            }
+        }
+        else if (!rotating && !inertiaRotation)
+        {
+            Toggle(topLeft, false);
+            Toggle(topRight, false);
+            Toggle(bottomLeft, false);
+            Toggle(bottomRight, false);
+        }
     }
 
-    // Metodo para encender o apagar todos los motores superiores o inferiores
-    void ToggleMotor(bool active, bool superiores)
+    // ---------------- HELPERS ----------------
+
+    private void Toggle(ParticleSystem ps, bool active)
     {
-        if (superiores)
-        {
-            ToggleMotor(active, superiorIzqMotor);
-            ToggleMotor(active, superiorRightMotor);
-        }
-        else
-        {
-            ToggleMotor(active, inferioresIzqMotor);
-            ToggleMotor(active, inferioresRightMotor);
-        }
+        if (!ps) return;
+
+        if (active && !ps.isPlaying) ps.Play();
+        else if (!active && ps.isPlaying) ps.Stop();
     }
 }
