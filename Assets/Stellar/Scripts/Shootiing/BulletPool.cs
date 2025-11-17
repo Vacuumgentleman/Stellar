@@ -9,7 +9,7 @@ namespace bullets
         [SerializeField] private GameObject bulletPrefab;
         [SerializeField] private int poolSize = 60;
         [SerializeField] private Transform bulletParent;
-        [SerializeField] private float bulletLifetime =10f;
+        [SerializeField] private float bulletLifetime = 10f;
 
         private readonly Queue<GameObject> bullets = new();
 
@@ -27,9 +27,8 @@ namespace bullets
                 GameObject bullet = Instantiate(bulletPrefab, bulletParent);
                 bullet.SetActive(false);
 
-                if (bullet.TryGetComponent(out bullet.fx.pack.Bullet b))
-                    b.Init(this, bulletLifetime); 
-
+                if (bullet.TryGetComponent(out Bullet b))
+                    b.Init(this, bulletLifetime);
 
                 bullets.Enqueue(bullet);
             }
@@ -42,10 +41,8 @@ namespace bullets
                 GameObject extra = Instantiate(bulletPrefab, bulletParent);
                 extra.SetActive(false);
 
-                if (extra.TryGetComponent(out Bullet b))
-                {
-                    b.Init(this, bulletLifetime); // Nuevo Init
-                }
+                if (extra.TryGetComponent(out Bullet extraScript))
+                    extraScript.Init(this, bulletLifetime);
 
                 bullets.Enqueue(extra);
             }
@@ -53,15 +50,14 @@ namespace bullets
             GameObject bullet = bullets.Dequeue();
             bullet.SetActive(true);
 
-            if (bullet.TryGetComponent(out Bullet b2))
+            if (bullet.TryGetComponent(out Bullet b))
             {
-                b2.ResetBullet();
-                b2.SetLifetime(bulletLifetime); // Asegura que actualiza su lifetime
+                b.ResetBullet();
+                b.SetLifetime(bulletLifetime);
             }
 
             return bullet;
         }
-
 
         public void ReturnBullet(GameObject bullet)
         {
