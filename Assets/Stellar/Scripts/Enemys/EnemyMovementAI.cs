@@ -11,20 +11,20 @@ public class EnemyMovementAI : MonoBehaviour
         Ambush
     }
 
-    [Header("Jugador (opcional, se puede asignar en tiempo real)")]
+    [Header("Target")]
     public Transform target;
 
-    [Header("Movimiento")]
+    [Header("Movement")]
     public float speed = 10f;
     public float rotationSpeed = 5f;
     public float stopDistance = 30f;
 
-    [Header("Evitacion de obstaculos")]
+    [Header("Obstacle Avoidance")]
     public float detectionDistance = 15f;
     public float avoidTime = 2f;
     public LayerMask obstacleMask;
 
-    [Header("Comportamiento de combate")]
+    [Header("Combat Behavior")]
     public CombatBehavior behavior = CombatBehavior.StopAndShoot;
 
     private Rigidbody rb;
@@ -32,15 +32,14 @@ public class EnemyMovementAI : MonoBehaviour
     private Vector3 avoidanceDirection;
     private float avoidTimer;
 
-    void Start()
+    private void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
-        // Buscar jugador si no esta asignado
         if (!target)
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -48,33 +47,33 @@ public class EnemyMovementAI : MonoBehaviour
             return;
         }
 
-        Vector3 toPlayer = (target.position - transform.position);
+        Vector3 toPlayer = target.position - transform.position;
         float distanceToPlayer = toPlayer.magnitude;
-        Vector3 moveDirection = toPlayer.normalized;
+        Vector3 moveDir = toPlayer.normalized;
 
-        // Evitar obstaculos
         if (isAvoiding)
         {
             avoidTimer -= Time.fixedDeltaTime;
             if (avoidTimer <= 0f) isAvoiding = false;
-            else moveDirection = (moveDirection + avoidanceDirection).normalized;
+            else moveDir = (moveDir + avoidanceDirection).normalized;
         }
         else if (Physics.Raycast(transform.position, transform.forward, detectionDistance, obstacleMask))
         {
-            Vector3[] directions = {
+            Vector3[] dirs =
+            {
                 transform.right, -transform.right,
                 transform.up, -transform.up,
                 -transform.forward
             };
 
-            foreach (var dir in directions)
+            foreach (var dir in dirs)
             {
                 if (!Physics.Raycast(transform.position, dir, detectionDistance * 0.8f, obstacleMask))
                 {
                     avoidanceDirection = dir;
                     isAvoiding = true;
                     avoidTimer = avoidTime;
-                    moveDirection = (moveDirection + dir).normalized;
+                    moveDir = (moveDir + dir).normalized;
                     break;
                 }
             }
@@ -82,23 +81,22 @@ public class EnemyMovementAI : MonoBehaviour
             if (!isAvoiding) return;
         }
 
-        // Comportamientos de combate
         switch (behavior)
         {
             case CombatBehavior.Approach:
-                MoveAndRotate(moveDirection);
+                MoveAndRotate(moveDir);
                 break;
 
             case CombatBehavior.StopAndShoot:
                 if (distanceToPlayer > stopDistance)
-                    MoveAndRotate(moveDirection);
+                    MoveAndRotate(moveDir);
                 else
-                    RotateOnly(moveDirection);
+                    RotateOnly(moveDir);
                 break;
 
             case CombatBehavior.Orbit:
                 if (distanceToPlayer > stopDistance)
-                    MoveAndRotate(moveDirection);
+                    MoveAndRotate(moveDir);
                 else
                 {
                     Vector3 orbitDir = Vector3.Cross(Vector3.up, toPlayer).normalized;
@@ -108,32 +106,30 @@ public class EnemyMovementAI : MonoBehaviour
 
             case CombatBehavior.Ambush:
                 if (distanceToPlayer > stopDistance * 1.2f)
-                    MoveAndRotate(moveDirection);
+                    MoveAndRotate(moveDir);
                 else
                 {
-                    Vector3 ambushDir = (moveDirection + transform.up * 0.5f).normalized;
+                    Vector3 ambushDir = (moveDir + transform.up * 0.5f).normalized;
                     MoveAndRotate(ambushDir);
                 }
                 break;
         }
     }
 
-    // Mover y rotar el enemigo en una direccion
-    void MoveAndRotate(Vector3 direction)
+    private void MoveAndRotate(Vector3 dir)
     {
-        Quaternion look = Quaternion.LookRotation(direction);
+        Quaternion look = Quaternion.LookRotation(dir);
         rb.MoveRotation(Quaternion.Slerp(rb.rotation, look, rotationSpeed * Time.fixedDeltaTime));
         rb.MovePosition(rb.position + rb.transform.forward * speed * Time.fixedDeltaTime);
     }
 
-    // Solo rotar el enemigo hacia una direccion
-    void RotateOnly(Vector3 direction)
+    private void RotateOnly(Vector3 dir)
     {
-        Quaternion look = Quaternion.LookRotation(direction);
+        Quaternion look = Quaternion.LookRotation(dir);
         rb.MoveRotation(Quaternion.Slerp(rb.rotation, look, rotationSpeed * Time.fixedDeltaTime));
     }
 
-    void OnEnable()
+    private void OnEnable()
     {
         if (!target)
         {
@@ -142,8 +138,7 @@ public class EnemyMovementAI : MonoBehaviour
         }
     }
 
-    // Gizmos para depuracion en el editor
-    void OnDrawGizmosSelected()
+    private void OnDrawGizmosSelected()
     {
         if (!Application.isPlaying) return;
         Gizmos.color = Color.yellow;

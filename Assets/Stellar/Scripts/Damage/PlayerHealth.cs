@@ -8,125 +8,94 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float maxHealth = 100f;
     [SerializeField] private float currentHealth;
 
-    [Header("UI de Vida")]
-    [SerializeField] private Slider vidaSlider;
+    [Header("UI")]
+    [SerializeField] private Slider healthSlider;
 
-    [Header("Sonidos")]
+    [Header("Audio")]
     [SerializeField] private AudioClip damageSound;
     [SerializeField] private AudioClip deathSound;
     [SerializeField] private AudioSource audioSourceOverride;
 
-    [Header("Partículas")]
+    [Header("Particles")]
     [SerializeField] private ParticleSystem damageEffect;
     [SerializeField] private float damageEffectDuration = 1f;
     [SerializeField] private ParticleSystem deathEffect;
     [SerializeField] private float deathEffectDuration = 2f;
 
     private AudioSource audioSource;
-    private bool isDead = false;
+    private bool isDead;
 
     private void Awake()
     {
         currentHealth = maxHealth;
-        isDead = false;
         audioSource = audioSourceOverride != null ? audioSourceOverride : GetComponent<AudioSource>();
-        UpdateSlider();
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            TakeDamage(10f);
-        }
+        UpdateHealthUI();
     }
 
     public void TakeDamage(float amount)
     {
         if (isDead || amount <= 0f) return;
 
-        currentHealth -= amount;
-        currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
+        currentHealth = Mathf.Clamp(currentHealth - amount, 0f, maxHealth);
 
         PlaySound(damageSound);
-        StartDamageEffect();
-        UpdateSlider();
+        PlayEffect(damageEffect, damageEffectDuration);
+        UpdateHealthUI();
 
-        if (currentHealth <= 0f && !isDead)
+        if (currentHealth <= 0f)
         {
-            KillPlayer();
+            HandleDeath();
         }
     }
 
-    public void KillPlayer()
+    private void HandleDeath()
     {
         if (isDead) return;
 
         isDead = true;
 
         PlaySound(deathSound);
-        StartDeathEffect();
-
-        Debug.Log("Jugador ha muerto");
+        PlayEffect(deathEffect, deathEffectDuration);
     }
 
     public void ResetHealth()
     {
         currentHealth = maxHealth;
         isDead = false;
-        UpdateSlider();
+        UpdateHealthUI();
     }
 
-    public float GetHealth() => currentHealth;
-    public float GetMaxHealth() => maxHealth;
-    public bool IsDead() => isDead;
+    private void UpdateHealthUI()
+    {
+        if (healthSlider == null) return;
+
+        healthSlider.value = Mathf.RoundToInt(currentHealth / 10f);
+    }
 
     private void PlaySound(AudioClip clip)
     {
-        if (clip == null || audioSource == null) return;
-        audioSource.PlayOneShot(clip);
+        if (clip != null && audioSource != null)
+            audioSource.PlayOneShot(clip);
     }
 
-    private void StartDamageEffect()
+    private void PlayEffect(ParticleSystem effect, float duration)
     {
-        if (damageEffect == null) return;
+        if (effect == null) return;
 
-        damageEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-        damageEffect.Play();
+        effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        effect.Play();
 
-        CancelInvoke(nameof(StopDamageEffect));
-        Invoke(nameof(StopDamageEffect), damageEffectDuration);
+        CancelInvoke(nameof(StopEffect));
+        Invoke(nameof(StopEffect), duration);
     }
 
-    private void StopDamageEffect()
+    private void StopEffect()
     {
-        if (damageEffect != null)
-            damageEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        damageEffect?.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        deathEffect?.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
 
-    private void StartDeathEffect()
-    {
-        if (deathEffect == null) return;
-
-        deathEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-        deathEffect.Play();
-
-        CancelInvoke(nameof(StopDeathEffect));
-        Invoke(nameof(StopDeathEffect), deathEffectDuration);
-    }
-
-    private void StopDeathEffect()
-    {
-        if (deathEffect != null)
-            deathEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-    }
-
-    private void UpdateSlider()
-    {
-        if (vidaSlider != null)
-        {
-            int valorRedondeado = Mathf.RoundToInt(currentHealth / 10f);
-            vidaSlider.value = valorRedondeado;
-        }
-    }
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => maxHealth;
+    public bool IsDead => isDead;
 }

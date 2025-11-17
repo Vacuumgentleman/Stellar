@@ -2,22 +2,19 @@ using UnityEngine;
 
 public class ParticleTest : MonoBehaviour
 {
-    public ParticleSystem testParticle;
-    public float duration = 1.5f;
+    [SerializeField] private ParticleSystem testParticle;
+    [SerializeField] private float duration = 1.5f;
 
     private void Start()
     {
-        if (testParticle != null)
-        {
-            Debug.Log("Llamando .Play() en testParticle");
-            testParticle.Play();
-            Invoke(nameof(StopParticle), duration);
-        }
+        if (testParticle == null) return;
+
+        testParticle.Play();
+        Invoke(nameof(StopParticle), duration);
     }
 
     private void StopParticle()
     {
-        if (testParticle != null)
-            testParticle.Stop();
+        testParticle?.Stop();
     }
 }

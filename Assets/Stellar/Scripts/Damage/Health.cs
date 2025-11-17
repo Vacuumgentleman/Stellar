@@ -10,48 +10,47 @@ public class Health : MonoBehaviour
     [SerializeField] private float currentHealth;
 
     [Header("Events")]
-    public UnityEvent<float> onHealthChanged;
-    public UnityEvent onDamageTaken;
-    public UnityEvent onDeath;
+    public UnityEvent<float> OnHealthChanged;
+    public UnityEvent OnDamageTaken;
+    public UnityEvent OnDeath;
 
-    [Header("Opciones")]
+    [Header("Options")]
     [SerializeField] private float disableDelay = 0f;
 
-    [Header("Sonidos")]
+    [Header("Audio")]
     [SerializeField] private AudioClip damageSound;
     [SerializeField] private AudioClip deathSound;
     [SerializeField] private AudioSource audioSourceOverride;
 
-    [Header("Partículas")]
+    [Header("Particles")]
     [SerializeField] private ParticleSystem damageEffect;
     [SerializeField] private float damageEffectDuration = 1f;
     [SerializeField] private ParticleSystem deathEffect;
     [SerializeField] private float deathEffectDuration = 2f;
 
     private AudioSource audioSource;
-    private bool isDead = false;
+    private bool isDead;
 
     private void Awake()
     {
         currentHealth = maxHealth;
-        isDead = false;
         audioSource = audioSourceOverride != null ? audioSourceOverride : GetComponent<AudioSource>();
     }
 
     public void TakeDamage(float amount)
     {
-        if (isDead || amount <= 0f) return;
+        if (isDead || amount <= 0f)
+            return;
 
-        currentHealth -= amount;
-        currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
+        currentHealth = Mathf.Clamp(currentHealth - amount, 0f, maxHealth);
 
-        onHealthChanged.Invoke(currentHealth);
-        onDamageTaken.Invoke();
+        OnHealthChanged?.Invoke(currentHealth);
+        OnDamageTaken?.Invoke();
 
         PlaySound(damageSound);
-        StartDamageEffect();
+        PlayEffect(damageEffect, damageEffectDuration);
 
-        if (currentHealth <= 0f && !isDead)
+        if (currentHealth <= 0f)
         {
             Kill();
         }
@@ -62,14 +61,19 @@ public class Health : MonoBehaviour
         if (isDead) return;
 
         isDead = true;
-        onDeath.Invoke();
+
+        OnDeath?.Invoke();
         ScoreManager.Instance?.AddEnemyKillScore();
 
-
         PlaySound(deathSound);
-        StartDeathEffect();
+        PlayEffect(deathEffect, deathEffectDuration);
 
-        float delay = Mathf.Max(deathSound != null ? deathSound.length : 0f, disableDelay, deathEffectDuration);
+        float delay = Mathf.Max(
+            deathSound != null ? deathSound.length : 0f,
+            disableDelay,
+            deathEffectDuration
+        );
+
         if (delay > 0f)
             StartCoroutine(DisableAfterDelay(delay));
         else
@@ -80,12 +84,12 @@ public class Health : MonoBehaviour
     {
         currentHealth = maxHealth;
         isDead = false;
-        onHealthChanged.Invoke(currentHealth);
+        OnHealthChanged?.Invoke(currentHealth);
     }
 
-    public float GetHealth() => currentHealth;
-    public float GetMaxHealth() => maxHealth;
-    public bool IsDead() => isDead;
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => maxHealth;
+    public bool IsDead => isDead;
 
     private IEnumerator DisableAfterDelay(float delay)
     {
@@ -95,41 +99,26 @@ public class Health : MonoBehaviour
 
     private void PlaySound(AudioClip clip)
     {
-        if (clip == null || audioSource == null) return;
-        audioSource.PlayOneShot(clip);
+        if (clip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
     }
 
-    private void StartDamageEffect()
+    private void PlayEffect(ParticleSystem effect, float duration)
     {
-        if (damageEffect == null) return;
+        if (effect == null) return;
 
-        damageEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-        damageEffect.Play();
+        effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        effect.Play();
 
-        CancelInvoke(nameof(StopDamageEffect));
-        Invoke(nameof(StopDamageEffect), damageEffectDuration);
+        CancelInvoke(nameof(StopEffect));
+        Invoke(nameof(StopEffect), duration);
     }
 
-    private void StopDamageEffect()
+    private void StopEffect()
     {
-        if (damageEffect != null)
-            damageEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-    }
-
-    private void StartDeathEffect()
-    {
-        if (deathEffect == null) return;
-
-        deathEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-        deathEffect.Play();
-
-        CancelInvoke(nameof(StopDeathEffect));
-        Invoke(nameof(StopDeathEffect), deathEffectDuration);
-    }
-
-    private void StopDeathEffect()
-    {
-        if (deathEffect != null)
-            deathEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        damageEffect?.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        deathEffect?.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
 }

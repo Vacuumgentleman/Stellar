@@ -5,17 +5,17 @@ using WrightAngle.Waypoint;
 
 public class EnemyManager : MonoBehaviour
 {
-    [Header("Configuracion del enemigo")]
+    [Header("Enemy Settings")]
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private int poolSize = 10;
     [SerializeField] private int enemiesPerWave = 5;
     [SerializeField] private float timeBetweenWaves = 10f;
     [SerializeField] private float maxWaveDuration = 30f;
 
-    [Header("Zonas de aparicion")]
+    [Header("Spawn Points")]
     [SerializeField] private Transform[] spawnPoints;
 
-    [Header("Contenedor de enemigos (opcional)")]
+    [Header("Enemy Pool Parent (Optional)")]
     [SerializeField] private Transform enemyPoolParent;
 
     private List<GameObject> enemyPool = new List<GameObject>();
@@ -25,8 +25,8 @@ public class EnemyManager : MonoBehaviour
 
     private void Start()
     {
-        CreatePool(); // Crear el grupo de enemigos
-        StartCoroutine(WaveRoutine()); // Iniciar la rutina de oleadas
+        CreatePool();
+        StartCoroutine(WaveRoutine());
     }
 
     private void Update()
@@ -35,14 +35,12 @@ public class EnemyManager : MonoBehaviour
 
         waveTimer += Time.deltaTime;
 
-        // Si no hay enemigos vivos o se supero el tiempo maximo de oleada, iniciar una nueva
         if (enemiesAlive <= 0 || waveTimer >= maxWaveDuration)
         {
             StartCoroutine(WaveRoutine());
         }
     }
 
-    // Crea la piscina (pool) de enemigos inactivos
     private void CreatePool()
     {
         for (int i = 0; i < poolSize; i++)
@@ -52,34 +50,29 @@ public class EnemyManager : MonoBehaviour
             if (enemyPoolParent != null)
                 enemy.transform.SetParent(enemyPoolParent);
 
-            // Si el enemigo tiene componente Health, registrar evento de muerte
             if (enemy.TryGetComponent(out Health health))
             {
-                health.onDeath.AddListener(() =>
+                health.OnDeath.AddListener(() =>
                 {
                     enemiesAlive--;
 
-                    // Desactiva el marcador de Waypoint si existe
                     WaypointTarget waypoint = enemy.GetComponentInChildren<WaypointTarget>();
                     if (waypoint != null)
-                    {
                         waypoint.DeactivateWaypoint();
-                    }
                 });
             }
 
-            enemy.SetActive(false); // Desactivar inicialmente
+            enemy.SetActive(false);
             enemyPool.Add(enemy);
         }
     }
 
-    // Rutina para controlar la aparicion de enemigos por oleadas
     private IEnumerator WaveRoutine()
     {
         waveActive = false;
         waveTimer = 0f;
 
-        yield return new WaitForSeconds(timeBetweenWaves); // Espera entre oleadas
+        yield return new WaitForSeconds(timeBetweenWaves);
 
         int spawned = 0;
 
@@ -89,17 +82,15 @@ public class EnemyManager : MonoBehaviour
             if (spawned >= enemiesPerWave) break;
 
             Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
+
             enemy.transform.position = spawnPoint.position;
             enemy.transform.rotation = spawnPoint.rotation;
 
-            // Reiniciar salud si tiene el componente
             if (enemy.TryGetComponent(out Health health))
-            {
                 health.ResetHealth();
-            }
 
-            enemy.SetActive(true); // Activar el enemigo
-            StartCoroutine(DelayedWaypointActivation(enemy)); // Activar Waypoint despues
+            enemy.SetActive(true);
+            StartCoroutine(DelayedWaypointActivation(enemy));
 
             spawned++;
             enemiesAlive++;
@@ -108,7 +99,6 @@ public class EnemyManager : MonoBehaviour
         waveActive = true;
     }
 
-    // Activa el waypoint del enemigo despues de un breve retraso
     private IEnumerator DelayedWaypointActivation(GameObject enemy)
     {
         yield return null;
@@ -116,12 +106,9 @@ public class EnemyManager : MonoBehaviour
 
         WaypointTarget waypoint = enemy.GetComponentInChildren<WaypointTarget>();
 
-        if (enemy.activeInHierarchy && waypoint != null)
+        if (enemy.activeInHierarchy && waypoint != null && !waypoint.IsRegistered)
         {
-            if (!waypoint.IsRegistered)
-            {
-                waypoint.ActivateWaypoint(); // Activar el waypoint si no esta registrado
-            }
+            waypoint.ActivateWaypoint();
         }
     }
 }
