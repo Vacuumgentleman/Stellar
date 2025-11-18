@@ -1,4 +1,4 @@
-# ========== Unity folders ==========
+# ================= Unity Folders =================
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
@@ -7,10 +7,10 @@
 [Ll]ogs/
 [Mm]emoryCaptures/
 
-# Never upload the Asset Store tools
+# Do not upload Asset Store tools
 Assets/AssetStoreTools*
 
-# ========== Auto-generated files ==========
+# ================= Auto-generated Files =================
 *.csproj
 *.unityproj
 *.sln
@@ -26,41 +26,41 @@ Assets/AssetStoreTools*
 *.opendb
 *.VC.db
 
-# ========== Crash and debug files ==========
+# ================= Crash and Debug Files =================
 *.stackdump
 
-# ========== Unity cache & metadata ==========
+# ================= Unity Cache & Metadata =================
 /ScriptAssemblies/
 /ShaderCache/
 sysinfo.txt
 
-# ========== Other generated folders ==========
+# ================= Other Generated Folders =================
 /[Bb]in/
 /[Oo]bj/
 /[Ll]ogs/
 
-# ========== Builds ==========
+# ================= Builds =================
 *.apk
 *.aab
 *.unitypackage
 
-# ========== Jetbrains Rider ==========
+# ================= JetBrains Rider =================
 Assets/Plugins/Editor/JetBrains*
 
-# ========== Visual Studio ==========
+# ================= Visual Studio =================
 .vs/
 .vscode/
 .idea/
 
-# ========== Operating System files ==========
+# ================= OS Files =================
 # Windows
 Thumbs.db
 ehthumbs.db
 Desktop.ini
-
 # macOS
 .DS_Store
-Assets/Firebase/Plugins/
-*.bundle
-*.so
-*.dll
+
+# ================= Ignore Firebase large native libs =================
+# Only ignore the two large >100MB files (safe)
+Assets/Firebase/Plugins/x86_64/FirebaseCppApp-13_5_0.bundle
+Assets/Firebase/Plugins/x86_64/FirebaseCppApp-13_5_0.so
