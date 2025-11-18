@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "855177247410",
+    "project_id": "stellar-55396",
+    "storage_bucket": "stellar-55396.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855177247410:android:52b59096bcd0f87ddea7ab",
+        "android_client_info": {
+          "package_name": "com.TVG.Stellar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-Mx3iw38xYgHKXBzLB_QD0Dfq-CNS5Dk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
