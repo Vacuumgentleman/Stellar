@@ -60,3 +60,7 @@ Desktop.ini
 
 # macOS
 .DS_Store
+Assets/Firebase/Plugins/
+*.bundle
+*.so
+*.dll
