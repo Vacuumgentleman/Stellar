@@ -26,7 +26,6 @@ public class FirestoreScoreService : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
     private void InitializeDatabase()
