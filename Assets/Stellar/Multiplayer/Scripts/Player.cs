@@ -38,6 +38,11 @@ public class Player : NetworkBehaviour
     [SerializeField] private Color readyColor = Color.white;
     [SerializeField] private Color cooldownColor = new Color(1, 1, 1, 0);
 
+    [Header("Stabilizer UI")]
+    [SerializeField] private Image stabilizerIcon;
+    [SerializeField] private Sprite stabilizerOnSprite;
+    [SerializeField] private Sprite stabilizerOffSprite;
+
     [Header("Audio")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip shootSound;
@@ -103,6 +108,8 @@ public class Player : NetworkBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        UpdateStabilizerIcon(); // inicializar icono
     }
 
     private void OnDisable()
@@ -239,7 +246,10 @@ public class Player : NetworkBehaviour
     private void HandleStabilizerToggle()
     {
         if (Object.HasInputAuthority && Input.GetKeyDown(stabilizerKey))
+        {
             stabilizerEnabled = !stabilizerEnabled;
+            UpdateStabilizerIcon();
+        }
     }
 
     // =======================
@@ -250,6 +260,15 @@ public class Player : NetworkBehaviour
         if (cooldownImage == null) return;
         float t = Mathf.Clamp01(cooldownTimer / localFireCooldown);
         cooldownImage.color = Color.Lerp(readyColor, cooldownColor, t);
+    }
+
+    // =======================
+    //      STABILIZER ICON
+    // =======================
+    private void UpdateStabilizerIcon()
+    {
+        if (stabilizerIcon == null) return;
+        stabilizerIcon.sprite = stabilizerEnabled ? stabilizerOnSprite : stabilizerOffSprite;
     }
 
     // =======================
