@@ -19,9 +19,12 @@ Fast-paced combat, responsive controls, and a clean sci-fi aesthetic define the 
   />
 
   </div>
+    ## Play on Itch.io
 
----
+  <div align="center">
 
+  **Donwload Executable**  
+ (https://drive.google.com/drive/u/0/folders/1hulFG7SBwrku9diapXByzP1KRl49lVkA
 
 ## Gameplay
 
@@ -83,21 +86,20 @@ Fast-paced combat, responsive controls, and a clean sci-fi aesthetic define the 
  ## Screenshots
 
   ### Menu & UI
-  | Menu | HUD |
-  |------|------|
-  | <img width="450" src="https://github.com/user-attachments/assets/example-menu" /> | <img width="450" src="https://github.com/user-attachments/assets/example-hud" /> |
 
-  ### Gameplay
-  | Player Ship | Enemy Wave | Explosion VFX |
-  |-------------|------------|----------------|
-  | <img width="450" src="https://github.com/user-attachments/assets/example-ship" /> | <img width="450" src="https://github.com/user-attachments/assets/example-wave" /> | <img width="450" src="https://github.com/user-attachments/assets/example-explosion" /> |
+  | ![Imagen de WhatsApp 2025-11-18 a las 22 36 21_4d410988](https://github.com/user-attachments/assets/e45d4e33-c021-4765-91a2-40bbdb810ef0)
+
+  <img width="898" height="441" alt="image" src="https://github.com/user-attachments/assets/0dd6ffc9-21cf-45bf-bf81-28960328b6bd" />
 
   ### Unity Editor
-  <img width="900" src="https://github.com/user-attachments/assets/example-editor" />
+  | <img width="1919" height="908" alt="image" src="https://github.com/user-attachments/assets/0fda9019-6c78-445c-a904-7eea6190f46a" />
 
 videos: |
   ## Gameplay Video
-  [![Gameplay](https://img.youtube.com/vi/example-thumbnail/0.jpg)](https://github.com/user-attachments/assets/example-video)
+
+
+https://github.com/user-attachments/assets/c42d0370-fc6d-428c-a592-1f1a7f2586ea
+
 
 ---
 ## Author: Sebastian Gravini
