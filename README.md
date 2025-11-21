@@ -18,13 +18,6 @@ Fast-paced combat, responsive controls, and a clean sci-fi aesthetic define the 
     src="https://github.com/user-attachments/assets/57e64e70-c3c8-414e-9bf2-8748d3d975e6"
   />
 
-  </div>
-    ## Play on Itch.io
-
-  <div align="center">
-
-  **Donwload Executable**  
- (https://drive.google.com/drive/u/0/folders/1hulFG7SBwrku9diapXByzP1KRl49lVkA
 
 ## Gameplay
 
