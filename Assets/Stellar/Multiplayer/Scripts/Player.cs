@@ -6,9 +6,6 @@ using UnityEngine.UI;
 
 public class Player : NetworkBehaviour
 {
-    // =======================
-    //     INSPECTOR FIELDS
-    // =======================
     [Header("References")]
     [SerializeField] private Ball ballPrefab;
     [SerializeField] private Transform ballSpawnPoint;
@@ -31,7 +28,7 @@ public class Player : NetworkBehaviour
     [SerializeField] private float stabilizerBrakeStrength = 10f;
 
     [Header("Gameplay")]
-    [SerializeField] private float localFireCooldown = 0.5f; // cooldown base
+    [SerializeField] private float localFireCooldown = 0.5f;
 
     [Header("Cooldown Visual")]
     [SerializeField] private Image cooldownImage;
@@ -47,16 +44,15 @@ public class Player : NetworkBehaviour
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip shootSound;
 
-    // =======================
-    //     NETWORKED FIELDS
-    // =======================
+    [Header("End Game UI")]
+    [SerializeField] private GameObject endGameUI;
+    [SerializeField] private Text endGameText;
+    [SerializeField] private Button returnToMenuButton;
+
     [Networked] public int Hits { get; set; }
     [Networked] public byte ColorIndex { get; set; }
     [Networked] private TickTimer FireDelay { get; set; }
 
-    // =======================
-    //     PRIVATE STATE
-    // =======================
     private NetworkCharacterController controller;
     private Vector3 forwardDirection;
     private Vector3 angularVelocity = Vector3.zero;
@@ -64,21 +60,17 @@ public class Player : NetworkBehaviour
     private bool stabilizerEnabled = false;
 
     private Renderer[] renderers;
-    private readonly List<Color> defaultColors = new List<Color>();
+    private List<Color> defaultColors = new List<Color>();
     private int lastHits = -1;
 
     private float cooldownTimer = 0f;
-    private double lastLocalFireTime = -9999;
 
     private static readonly Color[] ColorPalette =
     {
         Color.blue, Color.green, Color.yellow, Color.magenta,
-        Color.cyan, new Color(1f, 0.5f, 0f), Color.white, Color.gray
+        Color.cyan, new Color(1f,0.5f,0f), Color.white, Color.gray
     };
 
-    // =======================
-    //         UNITY
-    // =======================
     private void Awake()
     {
         controller = GetComponent<NetworkCharacterController>();
@@ -95,6 +87,13 @@ public class Player : NetworkBehaviour
         forwardDirection = transform.forward;
 
         UpdateCooldownVisual();
+
+        // Configurar UI de fin de partida
+        if (endGameUI != null)
+            endGameUI.SetActive(false);
+
+        if (returnToMenuButton != null)
+            returnToMenuButton.onClick.AddListener(() => UnityEngine.SceneManagement.SceneManager.LoadScene("MenuScene"));
     }
 
     public override void Spawned()
@@ -102,28 +101,27 @@ public class Player : NetworkBehaviour
         if (followCamera != null)
             followCamera.gameObject.SetActive(Object.HasInputAuthority);
 
-        Ball.RegisterPlayer(this);
+        Ball.RegisterPlayer(this); // solo Player, sin Runner
         ApplyColorFromIndex(ColorIndex);
         lastHits = Hits;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        UpdateStabilizerIcon(); // inicializar icono
+        UpdateStabilizerIcon();
     }
 
     private void OnDisable()
     {
-        Ball.UnregisterPlayer(this);
+        Ball.UnregisterPlayer(this); // solo Player, sin Runner
     }
+
 
     private void Update()
     {
-        // Cooldown timer
         cooldownTimer -= Time.deltaTime;
         UpdateCooldownVisual();
 
-        // Flash damage if hit
         if (lastHits != Hits)
         {
             lastHits = Hits;
@@ -133,8 +131,8 @@ public class Player : NetworkBehaviour
 
     private IEnumerator FlashDamageEffect(float duration)
     {
-        for (int i = 0; i < renderers.Length; i++)
-            renderers[i].material.color = Color.red;
+        foreach (var r in renderers)
+            r.material.color = Color.red;
 
         yield return new WaitForSeconds(duration);
 
@@ -142,9 +140,6 @@ public class Player : NetworkBehaviour
             renderers[i].material.color = defaultColors[i];
     }
 
-    // =======================
-    //       COLOR SYSTEM
-    // =======================
     private void ApplyColorFromIndex(byte index)
     {
         int i = Mathf.Clamp(index, 0, ColorPalette.Length - 1);
@@ -163,9 +158,6 @@ public class Player : NetworkBehaviour
             Hits++;
     }
 
-    // =======================
-    //   INPUT & MOVEMENT
-    // =======================
     public override void FixedUpdateNetwork()
     {
         if (!GetInput(out NetworkInputData input))
@@ -176,7 +168,6 @@ public class Player : NetworkBehaviour
         HandleVerticalMovement();
         HandleStabilizerToggle();
 
-        // -------- SHOOTING --------
         if (Object.HasInputAuthority && input.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
         {
             if (cooldownTimer <= 0f)
@@ -188,15 +179,14 @@ public class Player : NetworkBehaviour
             }
         }
 
-        // -------- COLOR & END GAME --------
         if (ColorIndex >= 0)
             ApplyColorFromIndex(ColorIndex);
 
+        // Nuevo manejo de fin de partida
         if (Object.HasStateAuthority && Hits >= 3)
         {
-            Runner.SessionInfo.IsOpen = false;
-            Runner.SessionInfo.IsVisible = false;
-            Runner.Shutdown();
+            ShowEndGameUI("Perdiste");
+            RemovePlayer();
         }
     }
 
@@ -252,9 +242,6 @@ public class Player : NetworkBehaviour
         }
     }
 
-    // =======================
-    //      COOLDOWN UI
-    // =======================
     private void UpdateCooldownVisual()
     {
         if (cooldownImage == null) return;
@@ -262,18 +249,31 @@ public class Player : NetworkBehaviour
         cooldownImage.color = Color.Lerp(readyColor, cooldownColor, t);
     }
 
-    // =======================
-    //      STABILIZER ICON
-    // =======================
     private void UpdateStabilizerIcon()
     {
         if (stabilizerIcon == null) return;
         stabilizerIcon.sprite = stabilizerEnabled ? stabilizerOnSprite : stabilizerOffSprite;
     }
 
-    // =======================
-    //        RPC SPAWN
-    // =======================
+    private void ShowEndGameUI(string message)
+    {
+        if (endGameUI != null && endGameText != null)
+        {
+            endGameText.text = message;
+            endGameUI.SetActive(true);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    private void RemovePlayer()
+    {
+        if (Runner != null && Object != null)
+        {
+            Runner.Despawn(Object);
+        }
+    }
+
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     private void RPC_RequestSpawnBall()
     {
